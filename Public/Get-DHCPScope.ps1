@@ -1,3 +1,5 @@
+## This isn't tested properly yet, don't use.
+## 01/11/2016
 function Get-DHCPScope
 {
     [CmdletBinding()]
@@ -12,7 +14,7 @@ function Get-DHCPScope
         [Parameter(
             Mandatory = $False
         )]
-        $Scope,
+        $Scope, ## Not yet implemented
 
         [Parameter(
             Mandatory = $False
@@ -22,7 +24,7 @@ function Get-DHCPScope
         [Parameter(
             Mandatory = $False
         )]
-        $Raw,
+        [switch]$Raw,
 
         [Parameter(
             Mandatory = $True
@@ -33,21 +35,21 @@ function Get-DHCPScope
 
     begin
     {
-        #Import-Module Posh-SSH -ErrorAction Stop -Verbose:$False
+        Import-Module Posh-SSH -ErrorAction Stop -Verbose:$False
 
         ## For testing:
-        . "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Comments.ps1"
-        . "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Get-StringBetween.ps1"
+        #. "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Comments.ps1"
+        #. "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Get-StringBetween.ps1"
     }
 
     process
     {
-        #$Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
-        #$Output = Invoke-SSHCommand -SSHSession $Session -Command "cat $ConfigFile"
-        #$Output = $Output.Output
+        $Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
+        $Output = Invoke-SSHCommand -SSHSession $Session -Command "cat $ConfigFile"
+        $Output = $Output.Output
 
         ## For testing
-        $Output = Remove-Comments -Path "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\.TestFiles\dhcpd.conf" 
+        #$Output = Get-Content -Path "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\.TestFiles\dhcpd.conf" 
 
         ## Output the raw output from the config file and exit
         if ($Raw -eq $true)
@@ -55,21 +57,29 @@ function Get-DHCPScope
             return $Output
         }
 
+        ## Collection of objects to return at the end
+        $ObjCollection = @()
         ## Regex match everything between 'subnet ' and '}'
         $MatchSubnet = Get-StringBetween -String $Output -Start 'subnet ' -End '}'
-        $MatchSubnet
 
         ##Loop through the matches we got
         foreach ($Scope in $MatchSubnet)
         {
             ## Split the Scope by newline and loop through
+            $Scope = $Scope.Value -replace "         ", "`r`n"
             $Scope -split "`r`n" | foreach {
 
-                ## Split the current line by spaces to get the values from it
-                $Split = $PSItem -split ' '
-                ## Start getting the values we need from each line
-                ## TODO: Maybe add all of this to a data-file or something.
-                switch -Wildcard ($Split)
+                ## Split the $Scope into lines and strip away bad characters
+                $Split = $PSItem.Split() `
+                    -replace ';', '' `
+                    -replace '}', '' `
+                    -replace '{', '' `
+                    -replace ',', '' `
+                    -replace '"', ''
+
+                ## Start getting the values that we need.
+                ## TODO: Maybe add this to some data-file?
+                switch -Wildcard ($PSItem)
                 {
                     "subnet *"
                     {
@@ -78,27 +88,63 @@ function Get-DHCPScope
                     }
                     "option routers *"
                     {
-                        $Gateway = $Split[3]
+                        $Gateway = $Split[2]
                     }
                     "option broadcast-address *"
                     {
-                        $Broadcast = $Split[2] -replace ';', ''
+                        $Broadcast = $Split[2]
                     }
                     "option domain-name-servers *"
                     {
-                        $DNSServers = @()
-                        $DNSServers += $Split[]
+                        $DNS = @()
+                        $DNS += $Split[2]
+                        $DNS += $Split[3]
+                        $DNS += $Split[4]
+                    }
+                    "option domain-name *"
+                    {
+                        $DomainName = $Split[2]
                     }
                     "range *"
                     {
                         $StartRange = $Split[1]
                         $EndRange = $Split[2]
                     }
-                    ""
+                    "next-server *"
+                    {
+                        $NextServer = $Split[1]
+                    }
+                    "filename *"
+                    {
+                        $Filename = $Split[1]
+                    }
+                    "option bootfile-name *"
+                    {
+                        $BootfileName = $Split[2]
+                    }
                 }
             }
+
+            ## Object for scopes
+            $ScopeObj = [PSCustomObject]@{
+                Subnet = $Subnet
+                Netmask = $Netmask
+                Gateway = $Gateway
+                Broadcast = $Broadcast
+                StartRange = $StartRange
+                EndRange = $EndRange
+                DomainName = $DomainName
+                DNS = $DNS
+                NextServer = $NextServer
+                Filename = $Filename
+                BootfileName = $BootfileName
+            }
+            $ObjCollection += $ScopeObj
         }
+
+        $ObjCollection
+
     }
 }
 
-Get-DHCPScope -Server 172.18.0.10 -Credentials test
+Get-DHCPScope -Server 172.18.0.10 -Credentials test -raw

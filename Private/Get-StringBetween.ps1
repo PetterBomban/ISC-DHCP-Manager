@@ -35,5 +35,5 @@ function Get-StringBetween
     $MatchSubnet = [regex]::Matches($String, $Regex)
 
     ## Return value(s) that was/were found.
-    $MatchSubnet.Value
+    $MatchSubnet
 }

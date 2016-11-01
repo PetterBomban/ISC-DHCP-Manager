@@ -15,8 +15,8 @@ function Remove-Comments
         $Path
     )
 
-    ## Get content as raw string if $Path is set
-    if($Path) { $String = Get-Content -Path $Path -Raw }
+    ## Get content as if $Path is set
+    if($Path) { $String = Get-Content -Path $Path }
 
     ## Output a string without comments (#)
     $String -replace '#.*'
