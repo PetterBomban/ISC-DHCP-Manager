@@ -19,11 +19,11 @@ function Get-StringBetween
     )
 
     ## Add escape character required by regex for '{' and '}' .
-    if ($Start -like '{}')
+    if ($Start -like '*{*')
     {
         $Start = $Start -replace '{', '\{'
     }
-    if ($End -like '}')
+    if ($End -like '*}*')
     {
         $End = $End -replace '}', '\}'
     }
