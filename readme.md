@@ -16,8 +16,7 @@ This is very much a work in progress, but the end-goal is to be able to manage a
 * ...
 
 ## Tested On
-Ubuntu Server 16.04 with isc-dhcp-server
-Windows 10 Enterprise
+Ubuntu Server 16.04 with isc-dhcp-server, Windows 10 Enterprise
 
 ## Requirements
 * Posh-SSH (Install-Module Posh-SSH)
