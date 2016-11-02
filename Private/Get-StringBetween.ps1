@@ -18,6 +18,11 @@ function Get-StringBetween
         $End
     )
 
+    if(($Start -and -not($End)) -or ($End -and -not($Start)))
+    {
+        throw "Need both -Start and -End."
+    }
+
     ## Add escape character required by regex for '{' and '}' .
     if ($Start -like '*{*')
     {
@@ -32,8 +37,8 @@ function Get-StringBetween
     ## TODO:This fails horribly if we do this on for example
     ##      dhcpd.conf, and it contains pool {...}. Fix somehow
     $Regex = "(?is)($Start).*?(?=$End)"
-    $MatchSubnet = [regex]::Matches($String, $Regex)
+    $Match = [regex]::Matches($String, $Regex)
 
     ## Return value(s) that was/were found.
-    $MatchSubnet
+    $Match
 }
