@@ -1,11 +1,10 @@
-## This isn't tested properly yet, don't use.
-## 01/11/2016
 function Get-DHCPScope
 {
     [CmdletBinding()]
     param
     (
         [Parameter(
+            Position = 0,
             Mandatory = $True
         )]
         [Alias("ComputerName", "cn")]
@@ -17,6 +16,7 @@ function Get-DHCPScope
         $Scope, ## Not yet implemented
 
         [Parameter(
+            Position = 2,
             Mandatory = $False
         )]
         $ConfigFile = "/etc/dhcp/dhcpd.conf",
@@ -27,6 +27,7 @@ function Get-DHCPScope
         [switch]$Raw,
 
         [Parameter(
+            Position = 1,
             Mandatory = $True
         )]
         [Alias("Cred", "Creds")]
@@ -38,8 +39,9 @@ function Get-DHCPScope
         Import-Module Posh-SSH -ErrorAction Stop -Verbose:$False
 
         ## For testing:
-        #. "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Comments.ps1"
-        #. "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\Private\Get-StringBetween.ps1"
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Get-StringBetween.ps1"
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Comments.ps1"
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Whitespace.ps1"
     }
 
     process
@@ -47,9 +49,6 @@ function Get-DHCPScope
         $Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
         $Output = Invoke-SSHCommand -SSHSession $Session -Command "cat $ConfigFile"
         $Output = $Output.Output
-
-        ## For testing
-        #$Output = Get-Content -Path "C:\Users\pette\Documents\GitHub\ISC-DHCP-Manager\.TestFiles\dhcpd.conf" 
 
         ## Output the raw output from the config file and exit
         if ($Raw -eq $true)
@@ -61,12 +60,13 @@ function Get-DHCPScope
         $ObjCollection = @()
         ## Regex match everything between 'subnet ' and '}'
         $MatchSubnet = Get-StringBetween -String $Output -Start 'subnet ' -End '}'
+        ## Replace either two or more spaces, or tabs with newlines.
+        $MatchSubnet = Remove-Whitespace -String ($MatchSubnet.Value)
 
         ##Loop through the matches we got
         foreach ($Scope in $MatchSubnet)
         {
             ## Split the Scope by newline and loop through
-            $Scope = $Scope.Value -replace "         ", "`r`n"
             $Scope -split "`r`n" | foreach {
 
                 ## Split the $Scope into lines and strip away bad characters
@@ -147,4 +147,4 @@ function Get-DHCPScope
     }
 }
 
-Get-DHCPScope -Server 172.18.0.10 -Credentials test -raw
+#Get-DHCPScope -Server 172.18.0.10 -Credentials (Get-Credential -Credential "IKT-Fag\Petter") 

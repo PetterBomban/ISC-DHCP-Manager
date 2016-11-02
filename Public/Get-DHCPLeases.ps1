@@ -45,6 +45,10 @@ function Get-DHCPLeases
     begin
     {
         Import-Module Posh-SSH -ErrorAction Stop -Verbose:$false
+        ## For testing:
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Get-StringBetween.ps1"
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Comments.ps1"
+        #. "C:\Users\Petter\Documents\GitHub\ISC-DHCP-Manager\Private\Remove-Whitespace.ps1"
     }
 
     process
@@ -59,19 +63,21 @@ function Get-DHCPLeases
             return $Output
         }
 
-        $CurrentDate = Get-Date                                 ## Current date
-        $ObjCollection = @()                                    ## For collecting all of the leases
-        $Matches = [regex]::Matches($Output, 'lease(.*?)\}')    ## Detecting individual leases from the file
+        ## DateT
+        $CurrentDate = Get-Date
+        ## Collecting objects at the end
+        $ObjCollection = @()
+        ## Regex match everything between 'subnet ' and '}'
+        $Matches = Get-StringBetween -String $Output -Start 'lease' -End '}'
+        ## Replace either two or more spaces, or tabs with newlines.
+        $Matches = Remove-Whitespace -String ($Matches.Value)
         
         foreach ($Match in $Matches)
-        {
-            ## Replace three spaces with a newline. Todo: find a better sollution?
-            $Value = $Match.Value -replace "   ", "`r`n"
-            
+        {   
             ## Filter out excludes and junk-data
             $Excludes += "leases(5)"
             $Excludes | foreach {
-                if ($Value -like "*$PSItem*")
+                if ($Match -like "*$PSItem*")
                 {
                     Write-Verbose "Skipped a lease because it contained: $PSItem."
                     continue
@@ -79,7 +85,7 @@ function Get-DHCPLeases
             }
 
             ## Get the values we need from the current lease in the loop
-            $Value -split "`r`n" | foreach {
+            $Match -split "`r`n" | foreach {
                 switch -Wildcard ($PSItem)
                 {
                     "client-hostname*"
@@ -137,7 +143,4 @@ function Get-DHCPLeases
     }
 }
 
-# Example:
-# $lease = Get-DHCPLeases -Server 172.18.0.10 -Credentials (Get-Credential -Credential "ikt-fag\Petter") -Excludes "00:50:56:b4:63:5a" -Verbose
-$lease = Get-DHCPLeases -ip 172.18.0.10 -cred (Get-Credential) -raw
-$lease
+#Get-DHCPLeases -Server 172.18.0.10 -Credentials (Get-Credential -Credential "ikt-fag\Petter") -Excludes "00:50:56:b4:63:5a" -Verbose
