@@ -35,6 +35,6 @@ Function New-DHCPScope.ps1
     process
     {
         #$Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
-         $Output
+        $Output
     }
 }
