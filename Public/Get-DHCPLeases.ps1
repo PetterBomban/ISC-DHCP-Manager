@@ -67,7 +67,7 @@ function Get-DHCPLeases
         $CurrentDate = Get-Date
         ## Collecting objects at the end
         $ObjCollection = @()
-        ## Regex match everything between 'subnet ' and '}'
+        ## Regex match everything between 'lease' and '}'
         $Matches = Get-StringBetween -String $Output -Start 'lease' -End '}'
         ## Replace either two or more spaces, or tabs with newlines.
         $Matches = Remove-Whitespace -String ($Matches.Value)
