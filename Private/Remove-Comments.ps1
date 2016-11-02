@@ -19,5 +19,5 @@ function Remove-Comments
     if($Path) { $String = Get-Content -Path $Path }
 
     ## Output a string without comments (#)
-    $String -replace '#.*'
+    $String -replace '#.*', ''
 }
