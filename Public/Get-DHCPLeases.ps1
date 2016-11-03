@@ -5,17 +5,11 @@ function Get-DHCPLeases
     (
         [Parameter(
             Position = 0,
-            Mandatory = $true
+            Mandatory = $true,
+            ValueFromPipeline = $true
         )]
-        [alias("ip", "cn")]
-        $Server,
-
-        [Parameter(
-            Position = 1,
-            Mandatory = $true
-        )]
-        [alias("cred")]
-        $Credentials,
+        [alias("ssh")]
+        $Session,
 
         [Parameter(
             Position = 2,
@@ -53,7 +47,10 @@ function Get-DHCPLeases
 
     process
     {
-        $Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
+        if (-not($Session.Connected))
+        {
+            throw "You are not connected to a server!"
+        }
         $Output = Invoke-SSHCommand -SSHSession $Session -Command "cat $LeaseFile"
         $Output = $Output.Output
 
@@ -143,4 +140,5 @@ function Get-DHCPLeases
     }
 }
 
-#Get-DHCPLeases -Server 172.18.0.10 -Credentials (Get-Credential -Credential "ikt-fag\Petter") -Excludes "00:50:56:b4:63:5a" -Verbose
+#$Session = Connect-DHCPServer -cn 172.18.0.10 -cred (Get-Credential -Credential "IKT-Fag\Petter")
+#Get-DHCPLeases -Session $Session -Excludes "00:50:56:b4:63:5a" -Verbose

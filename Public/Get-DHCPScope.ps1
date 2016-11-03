@@ -8,7 +8,7 @@ function Get-DHCPScope
             Mandatory = $True
         )]
         [Alias("ComputerName", "cn")]
-        $Server,
+        $Session,
 
         [Parameter(
             Mandatory = $False
@@ -24,14 +24,7 @@ function Get-DHCPScope
         [Parameter(
             Mandatory = $False
         )]
-        [switch]$Raw,
-
-        [Parameter(
-            Position = 1,
-            Mandatory = $True
-        )]
-        [Alias("Cred", "Creds")]
-        $Credentials
+        [switch]$Raw
     )
 
     begin
@@ -46,7 +39,10 @@ function Get-DHCPScope
 
     process
     {
-        $Session = New-SSHSession -ComputerName $Server -Credential $Credentials -AcceptKey
+        if (-not($Session.Connected))
+        {
+            throw "You are not connected to a server!"
+        }
         $Output = Invoke-SSHCommand -SSHSession $Session -Command "cat $ConfigFile"
         $Output = $Output.Output
 
@@ -146,5 +142,5 @@ function Get-DHCPScope
 
     }
 }
-
-#Get-DHCPScope -Server 172.18.0.10 -Credentials (Get-Credential -Credential "IKT-Fag\Petter") 
+#$Session = Connect-DHCPServer -cn 172.18.0.10 -cred (Get-Credential -Credential "IKT-Fag\Petter")
+#Get-DHCPScope -Session $Session
