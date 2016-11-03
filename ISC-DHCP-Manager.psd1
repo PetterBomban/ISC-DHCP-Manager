@@ -21,6 +21,9 @@ Copyright = 'MIT License'
 # Description of the functionality provided by this module
 Description = 'Module for managing isc-dhcp-server.'
 
+# We require PowerShell v5.0
+PowerShellVersion = '5.0'
+
 # Functions to export from this module
 FunctionsToExport = '*'
 
