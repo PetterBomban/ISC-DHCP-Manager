@@ -7,12 +7,16 @@ This is very much a work in progress, but the end-goal is to be able to manage a
 * Get-DHCPScope.ps1
 
 ## Currently Working On
+* Dedicated parser
 * New-DHCPScope
 
 ## Planned
 * Remove-DHCPScope
 * Add-DHCPScopeOptions
 * Remove-DHCPScopeOptions
+* Restart-DHCPServer
+* Stop-DHCPServer
+* Start-DHCPServer
 * ...
 
 ## Tested On/With
