@@ -3,8 +3,10 @@
 This is very much a work in progress, but the end-goal is to be able to manage an ISC-DHCP-Server completely via PowerShell.
 
 ## Currently Working
-* Get-DHCPLeases.ps1
-* Get-DHCPScope.ps1
+* Get-DHCPLeases
+* Get-DHCPScope
+* Connect-DHCPServer
+* Disconnect-DHCPServer
 
 ## Currently Working On
 * Dedicated parser
@@ -27,4 +29,4 @@ This is very much a work in progress, but the end-goal is to be able to manage a
 ## Requirements
 * [Posh-SSH](https://github.com/darkoperator/Posh-SSH)
 * Ubuntu Server + isc-dhcp-server
-
+* PowerShell version 5.0
